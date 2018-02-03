@@ -3,6 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
+	"time"
+
+	_ "net/http/pprof"
 
 	"github.com/lafolle/gosta"
 )
@@ -20,6 +24,12 @@ var (
 func main() {
 	flag.Parse()
 
+	// Live profiling webserver
+	go func() {
+		fmt.Println("See Profile info at http://localhost:6070/debug/pprof/ ")
+		fmt.Println(http.ListenAndServe(":5000", nil))
+	}()
+
 	if *endpoint != "" && *stacksFileName != "" {
 		fmt.Println("Only 1 of -u and -f should be mentioned.")
 		return
@@ -29,6 +39,9 @@ func main() {
 		return
 	}
 
+	// TODO(lafolle): 18782 g take 7.21s to be dumped. See if it can
+	// be improved.
+	start := time.Now()
 	err := gosta.Process(*stacksFileName, gosta.Options{
 		Db:          *db,
 		DbPassword:  *dbPassword,
@@ -38,4 +51,6 @@ func main() {
 	if err != nil {
 		fmt.Println("err processsing stacks:", err)
 	}
+	end := time.Since(start)
+	fmt.Printf("Time taken: %s\n", end)
 }

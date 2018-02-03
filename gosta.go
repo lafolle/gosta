@@ -35,6 +35,7 @@ type stackTrace struct {
 
 	// if goroutine is runnable.
 	runnable bool
+
 	// Can be either of
 	// 1. syscall
 	// 2. semacquire,
